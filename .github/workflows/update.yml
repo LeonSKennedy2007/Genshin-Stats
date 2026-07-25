@@ -27,7 +27,7 @@ jobs:
           cache: npm
 
       - name: Install Dependencies
-        run: npm ci
+        run: npm install
 
       - name: Run Genshin Widget Updater
         env:
@@ -35,4 +35,6 @@ jobs:
           DISCORD_CLIENT_ID: ${{ secrets.DISCORD_CLIENT_ID }}
           DISCORD_USER_ID: ${{ secrets.DISCORD_USER_ID }}
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          HOYO_LTUID_V2: ${{ secrets.HOYO_LTUID_V2 }}
+          HOYO_LTOKEN_V2: ${{ secrets.HOYO_LTOKEN_V2 }}
         run: node enkaUser.js
