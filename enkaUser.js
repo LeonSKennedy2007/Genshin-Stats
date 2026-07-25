@@ -299,7 +299,7 @@ async function syncGenshinStats() {
         }
         if (hoyo.avatarNumber != null) {
             dynamic.push({ type: 1, name: "chars_str", value: "Characters Owned" });
-            dynamic.push({ type: 1, name: "chars_count", value: Number(hoyo.avatarNumber) });
+            dynamic.push({ type: 2, name: "chars_count", value: Number(hoyo.avatarNumber) });
         }
 
         // Only add the image field if we actually resolved one
