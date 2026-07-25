@@ -259,6 +259,18 @@ async function syncGenshinStats() {
                 type: 1,
                 name: "mini",
                 value: `${player.nickname}: AR ${player.level ?? "-"}`
+            },
+
+            {
+                type: 1,
+                name: "chars_str",
+                value: "Characters Owned"
+            },
+
+            {
+                type: 1,
+                name: "chars_count",
+                value: player.fetterCount ?? 0
             }
         ];
 
