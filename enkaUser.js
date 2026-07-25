@@ -268,7 +268,7 @@ async function syncGenshinStats() {
             },
 
             {
-                type: 1,
+                type: 2,
                 name: "chars_count",
                 value: player.fetterCount ?? 0
             }
