@@ -102,6 +102,28 @@ async function getShowcasedCharacter(player) {
     }
 }
 
+async function getHoyolabStats() {
+    try {
+        const genshin = new GenshinImpact({
+            cookie: {
+                ltokenV2: process.env.HOYO_LTOKEN_V2,
+                ltuidV2: parseInt(process.env.HOYO_LTUID_V2)
+            },
+            uid: Number(process.env.GENSHIN_UID),
+            lang: LanguageEnum.ENGLISH
+        });
+
+        const record = await genshin.record.records();
+        return {
+            activeDays: record?.stats?.activeDayNumber ?? null,
+            avatarNumber: record?.stats?.avatarNumber ?? null
+        };
+    } catch (err) {
+        console.warn("⚠️ Could not fetch HoyoLab stats:", err.message);
+        return { activeDays: null, avatarNumber: null };
+    }
+}
+
 async function syncGenshinStats() {
     try {
         const enkaResponse = await axios.get(ENKA_URL, { timeout: 10000 });
