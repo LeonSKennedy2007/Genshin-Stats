@@ -115,8 +115,8 @@ async function getHoyolabStats() {
 
         const record = await genshin.record.records();
         return {
-            activeDays: record?.stats?.activeDayNumber ?? null,
-            avatarNumber: record?.stats?.avatarNumber ?? null
+            activeDays: record?.stats?.active_day_number ?? null,
+            avatarNumber: record?.stats?.avatar_number ?? null
         };
     } catch (err) {
         console.warn("⚠️ Could not fetch HoyoLab stats:", err.message);
