@@ -291,6 +291,17 @@ async function syncGenshinStats() {
             }
         ];
 
+        const hoyo = await getHoyolabStats();
+
+        if (hoyo.activeDays != null) {
+            dynamic.push({ type: 1, name: "days_str", value: "Active Days" });
+            dynamic.push({ type: 1, name: "days_txt", value: String(hoyo.activeDays) });
+        }
+        if (hoyo.avatarNumber != null) {
+            dynamic.push({ type: 1, name: "chars_str", value: "Characters Owned" });
+            dynamic.push({ type: 2, name: "chars_count", value: Number(hoyo.avatarNumber) });
+        }
+
         // Only add the image field if we actually resolved one
         // (same pattern as the Last.fm widget's album_art)
         if (imageUrl) {
