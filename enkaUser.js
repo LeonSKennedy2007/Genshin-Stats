@@ -141,7 +141,12 @@ async function getHoyolabCharacters() {
         }
         return map;
     } catch (err) {
-        console.warn("⚠️ Could not fetch HoyoLab character list:", err.message);
+        console.warn("⚠️ Could not fetch HoyoLab character list:", {
+            message: err.message || "(empty)",
+            code: err.code,
+            retcode: err.response?.data?.retcode ?? err.retcode,
+            data: err.response?.data
+        });
         return {};
     }
 }
