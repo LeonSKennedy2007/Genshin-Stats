@@ -23,8 +23,10 @@ const ROTATE_HOURS = Number(process.env.ROTATE_HOURS ?? 6);
 // =====================
 // SHOWCASED CHARACTER (image + name)
 // =====================
-async function getShowcasedCharacter(player, hoyoChars) {
+async function getShowcasedCharacter(player) {
     try {
+        // Rotate through the showcase: pick a different character every ROTATE_HOURS.
+        // Time-based, so no state file is needed — each scheduled run lands on the next slot.
         const showcase = player.showAvatarInfoList ?? [];
         let showcased = null;
 
@@ -40,6 +42,8 @@ async function getShowcasedCharacter(player, hoyoChars) {
         if (showcased) {
             const { data: characters } = await axios.get(CHARACTERS_MAP_URL, { timeout: 10000 });
 
+            // Traveler needs the skillDepot suffix (e.g. "10000007-704"),
+            // normal characters are just the avatarId.
             const key =
                 showcased.avatarId >= 10000005 && showcased.avatarId <= 10000007 && showcased.skillDepotId
                     ? `${showcased.avatarId}-${showcased.skillDepotId}`
@@ -48,18 +52,24 @@ async function getShowcasedCharacter(player, hoyoChars) {
             const charData = characters[key] ?? characters[String(showcased.avatarId)];
 
             if (charData) {
+                // Costume icon if one is equipped, otherwise the default icon
                 let iconName = null;
+
                 if (showcased.costumeId && charData.Costumes?.[showcased.costumeId]?.icon) {
                     iconName = charData.Costumes[showcased.costumeId].icon;
                 } else if (charData.SideIconName) {
+                    // "UI_AvatarIcon_Side_Kachina" -> "UI_AvatarIcon_Kachina"
                     iconName = charData.SideIconName.replace("_Side", "");
                 }
 
+                // Resolve the character's display name from Enka's localization map
                 let name = null;
                 try {
                     const { data: loc } = await axios.get(LOC_MAP_URL, { timeout: 10000 });
                     name = loc.en?.[String(charData.NameTextMapHash)] ?? null;
-                } catch {}
+                } catch {
+                    // name is optional — image alone is still fine
+                }
 
                 if (iconName) {
                     return {
@@ -69,27 +79,19 @@ async function getShowcasedCharacter(player, hoyoChars) {
                     };
                 }
             }
-
-            // ✅ Fallback: Enka mapping is missing this character (usually a new release).
-            // Use official HoYoLab data instead — always up to date on release day.
-            const hoyoChar = hoyoChars?.[showcased.avatarId];
-            if (hoyoChar) {
-                console.log(`ℹ️ Using HoYoLab fallback for avatarId ${showcased.avatarId} (${hoyoChar.name})`);
-                return {
-                    imageUrl: hoyoChar.icon,
-                    name: hoyoChar.name,
-                    level: showcased.level ?? null
-                };
-            }
         }
 
         // Fallback: the player's in-game profile picture
-        const pfpId = player.profilePicture?.avatarId ?? player.profilePicture?.id;
+        const pfpId = player.profilePicture?.id;
         if (pfpId) {
             const { data: pfps } = await axios.get(PFPS_MAP_URL, { timeout: 10000 });
             const iconPath = pfps[String(pfpId)]?.iconPath;
             if (iconPath) {
-                return { imageUrl: `${ENKA_UI_BASE}${iconPath}.png`, name: null, level: null };
+                return {
+                    imageUrl: `${ENKA_UI_BASE}${iconPath}.png`,
+                    name: null,
+                    level: null
+                };
             }
         }
 
@@ -119,34 +121,6 @@ async function getHoyolabStats() {
     } catch (err) {
         console.warn("⚠️ Could not fetch HoyoLab stats:", err.message);
         return { activeDays: null, avatarNumber: null };
-    }
-}
-
-async function getHoyolabCharacters() {
-    try {
-        const genshin = new GenshinImpact({
-            cookie: {
-                ltokenV2: process.env.HOYO_LTOKEN_V2,
-                ltuidV2: parseInt(process.env.HOYO_LTUID_V2)
-            },
-            uid: Number(process.env.GENSHIN_UID),
-            lang: LanguageEnum.ENGLISH
-        });
-
-        const { avatars } = await genshin.record.characters();
-        // Map by avatarId for quick lookup: { id: { name, icon } }
-        const map = {};
-        for (const a of avatars ?? []) {
-            map[a.id] = { name: a.name, icon: a.icon };
-        }
-        return map;
-    } catch (err) {
-        console.warn("⚠️ Could not fetch HoyoLab character list:", {
-            message: err.message || "(empty)",
-            code: err.code,
-            http: JSON.stringify(err.http)
-        });
-        return {};
     }
 }
 
@@ -195,8 +169,7 @@ async function syncGenshinStats() {
                 : "\"No signature\"";
 
         // Resolve the showcased character (image + name)
-        const hoyoChars = await getHoyolabCharacters();
-        const character = await getShowcasedCharacter(player, hoyoChars);
+        const character = await getShowcasedCharacter(player);
         const { imageUrl } = character;
 
         const characterLabel = character.name
