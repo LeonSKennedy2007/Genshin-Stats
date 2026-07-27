@@ -144,8 +144,7 @@ async function getHoyolabCharacters() {
         console.warn("⚠️ Could not fetch HoyoLab character list:", {
             message: err.message || "(empty)",
             code: err.code,
-            retcode: err.response?.data?.retcode ?? err.retcode,
-            data: err.response?.data
+            http: JSON.stringify(err.http)
         });
         return {};
     }
