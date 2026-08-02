@@ -247,7 +247,7 @@ async function syncGenshinStats() {
                 name: "img",
                 value:
                     theaterAct != null
-                        ? `Act ${theaterAct}${theaterMode === 109 ? "-2" : ""} (${theaterStars ?? "-"}★)`
+                        ? `Act ${theaterAct}${theaterMode === 114 ? "-2" : ""} (${theaterStars ?? "-"}★)`
                         : "Not Completed"
             },
 
